@@ -112,13 +112,7 @@ class PlayerDieEvent(Event):
         self.name = "Player dies @T_T@"
 
 
-class PlayerReachGoalEvent(Event):
-    def __init__(self):
-        self.name = "Player made to the goal !\o/!"
-
 class EventManager:
-
-
 
     def __init__(self):
         self.listeners = {}
