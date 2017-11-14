@@ -23,7 +23,7 @@ class WumpusKnowledgeBase():
     def __init__(self):
         self.k = expr('~P00 & ~W00')
 
-        li = []
+        l = []
         for i in range(4):
             for j in range(4):
                 for fringe, death in (('B', 'P'), ('S', 'W')):
@@ -32,43 +32,70 @@ class WumpusKnowledgeBase():
                     for s, t in neighbors(i, j):
                         right_list.append("%s%s%s" % (death, s, t))
 
-                    '''
-                    FACTS SETTING UP :
-                    STEP 1:
-                    self.pos, [all possible situations that could be encountered in its neighboring spots]
-
-                    B00  ['PXX']        XX be the neighbors of (0,0)
-                    S00  ['PXX', 'WXX',...]         XX be the neighbors of (0,0)
-                    B01  ['PXX', 'WXX',...]         XX be the neighbors of (0,1)
-                    S01  ['PXX', 'WXX',...]         ...
-                    B10  ['PXX', 'WXX',...]         ...
-                    S10  ['PXX', 'WXX',...]         ...
-                    ......
-                    '''
-                    li.append("(%s <=> (%s))" % \
+                    
+                    l.append("(%s <=> (%s))" % \
                               (left, ' | '.join(right_list)))
+        '''
+        FACTS SETTING UP :
+        Step1:
+        ~P(0,0) & ~W(0,0) ==True
+        B(0,0) <=> P(0,1) | P(1,0) 
+        S(0,0) <=> W(0,1) | W(1,0) 
+        B(0,1) <=> P(0,0) | P(1,1) | P(0,2) 
+        S(0,1) <=> W(0,0) | W(1,1) | W(0,2) 
+        B(0,2) <=> P(1,2) | P(0,1) | P(0,3) 
+        S(0,2) <=> W(1,2) | W(0,1) | W(0,3) 
+        B(0,3) <=> P(1,3) | P(0,2) 
+        S(0,3) <=> W(1,3) | W(0,2)
+        B(1,0) <=> P(2,0) | P(0,0) | P(1,1) 
+        S(1,0) <=> W(2,0) | W(0,0) | W(1,1) 
+        B(1,1) <=> P(0,1) | P(1,2) | P(1,0) | P(2,1)
+        S(1,1) <=> W(0,1) | W(1,2) | W(1,0) | W(2,1) 
+        B(1,2) <=> P(1,1) | P(1,3) | P(0,2) | P(2,2) 
+        S(1,2) <=> W(1,1) | W(1,3) | W(0,2) | W(2,2) 
+        B(1,3) <=> P(1,2) | P(0,3) | P(2,3) 
+        S(1,3) <=> W(1,2) | W(0,3) | W(2,3) 
+        B(2,0) <=> P(3,0) | P(1,0) | P(2,1) 
+        S(2,0) <=> W(3,0) | W(1,0) | W(2,1) 
+        B(2,1) <=> P(2,0) | P(3,1) | P(1,1) | P(2,2) 
+        S(2,1) <=> W(2,0) | W(3,1) | W(1,1) | W(2,2) 
+        B(2,2) <=> P(1,2) | P(3,2) | P(2,3) | P(2,1) 
+        S(2,2) <=> W(1,2) | W(3,2) | W(2,3) | W(2,1) 
+        B(2,3) <=> P(1,3) | P(3,3) | P(2,2) 
+        S(2,3) <=> W(1,3) | W(3,3) | W(2,2) 
+        B(3,0) <=> P(2,0) | P(3,1) 
+        S(3,0) <=> W(2,0) | W(3,1) 
+        B(3,1) <=> P(3,0) | P(3,2) | P(2,1) 
+        S(3,1) <=> W(3,0) | W(3,2) | W(2,1) 
+        B(3,2) <=> P(3,1) | P(3,3) | P(2,2) 
+        S(3,2) <=> W(3,1) | W(3,3) | W(2,2)
+        B(3,3) <=> P(3,2) | P(2,3) 
+        S(3,3) <=> W(3,2) | W(2,3) 
+        ......
+        
+        '''
 
-        rule = expr(' & '.join(li))
+        rule = expr(' & '.join(l))
         self.addRules(rule)
 
         # FACTS SETTING UP :
-        # STEP 2:
+        # Step 2:
 
         # must have one wumpus
-        li = ['W%s%s' % (i, j) for i in range(4) for j in range(4)]
-        rule = expr(' | '.join(li))
+        l = ['W%s%s' % (i, j) for i in range(4) for j in range(4)]
+        rule = expr(' | '.join(l))
         self.addRules(rule)
 
         # And only one wumpus
         # make sure every (~W%s%s | ~W%s%s)==True
-        li = ['(~W%s%s | ~W%s%s)' % \
+        l = ['(~W%s%s | ~W%s%s)' % \
               (i, j, x, y)
               for i in range(4) \
               for j in range(4) \
               for x in range(4) \
               for y in range(4) \
               if not ((i == x) and (j == y))]
-        rule = expr(' & '.join(li))
+        rule = expr(' & '.join(l))
         self.addRules(rule)
 
     def addRules(self, s):
