@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+
 import time
 
 from logicalExpr import dpll_satisfiable, expr
@@ -102,11 +102,8 @@ class WumpusKnowledgeBase():
 
 
 # test code
-
-
-w=WumpusKnowledgeBase()
-
 '''
+w=WumpusKnowledgeBase()
 w.ask(expr("(P12 | W12)"))
 w.ask(expr("(~P12 | ~W22)"))
 '''
