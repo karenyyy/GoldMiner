@@ -1,5 +1,7 @@
-import re
+# used some of the book code of Russell And Norvig's "Artificial Intelligence - A Modern Approach"
+# https://github.com/aimacode/aima-python/blob/master/logic.py
 
+import re
 
 def find_if(predicate, seq):
     """If there is an element of seq that satisfies predicate; return it."""
