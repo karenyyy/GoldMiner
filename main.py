@@ -1,5 +1,5 @@
 
-from ai import Agent
+from agent import Agent
 from app import App
 from controller import *
 from event import EventManager
