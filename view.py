@@ -9,36 +9,34 @@ import agent, event
 
 color = {
     'gray': (100, 100, 100),
-    'white': (0, 0, 0),
     'white': (255, 255, 255),
     'light_green': (20, 60, 20),
-    'urgent': (150, 50, 50),
-    'danger': (60, 30, 30)
+    'danger': (150, 50, 50)
 }
 
-instruction = "Press H to view help, SPACE to step, Q to quit"
 
 help = """
-    cs360 project demo
-
-       H: Display this help info
-       I: Intelligent mode
-       V: View the world
-       R: Reset the world
-       Q: Quit
-       Space: Step
-
-   Have fun!!
+    CMPSC360 Project GoldMiner Demo
+    *** I: Intelligent agent mode
+    *** V: View what state it is in each cell
+    *** R: Reset the board
+    *** Q: Quit the game
+    *** Enter: Next step
+    *** ->: turn left
+    *** <-: turn right
+   Press H to hide the help information 
+        (might need to try a few more times, sorry..)
+   
+   Have fun \(^o^)/\(^o^)/\(^o^)/
 """
 
-# status light
 light_flick_ticks = 5
 
-status_font = (os.path.join('font', 'comic.ttf'), 26)
+status_font = (os.path.join('helpInfoFont', 'Pacifico.ttf'), 22)
 
 
 def load_image(name, colorkey=None):
-    fullname = os.path.join('img', name)
+    fullname = os.path.join('images', name)
     image = pg.image.load(fullname)
     image = image.convert()
     if colorkey is not None:
@@ -49,15 +47,14 @@ def load_image(name, colorkey=None):
 
 
 class MainFrame:
-    """Main Frame -- the whole window"""
 
-    def __init__(self, ev_manager):
-        self.ev_manager = ev_manager
-        self.ev_manager.register_listener(self)
+    def __init__(self, event_controller):
+        self.event_controller = event_controller
+        self.event_controller.register_listener(self)
 
         pg.init()
         self.screen = pg.display.set_mode((769, 920), pg.RESIZABLE)
-        pg.display.set_caption('360 proj GoldMiner')
+        pg.display.set_caption('GoldMiner (360 project game)')
         self.background = pg.Surface(self.screen.get_size())
         self.background.convert()
         self.background.fill(color["white"])
@@ -95,8 +92,8 @@ class MainFrame:
 
         self.player = Player()
 
-        ev = event.GenerateRequestEvent()
-        self.ev_manager.post(ev)
+        ev = event.GenerateRequest()
+        self.event_controller.post(ev)
 
     def player_moveto(self, pos):
         self.player_sector = self.sectors[pos]
@@ -120,7 +117,6 @@ class MainFrame:
 
     def player_turn(self, ev):
         self.player.update_facing(ev.facing)
-
 
 
 
@@ -153,8 +149,8 @@ class MainFrame:
             sector.things = []
         self.player.remove(self.front_sprites)
 
-        ev = event.GenerateRequestEvent()
-        self.ev_manager.post(ev)
+        ev = event.GenerateRequest()
+        self.event_controller.post(ev)
 
     def redraw(self):
         # Draw everything
@@ -171,24 +167,24 @@ class MainFrame:
         pg.display.update(dirty_rects)
 
     def notify(self, ev):
-        if isinstance(ev, event.TickEvent):
+        if isinstance(ev, event.Tick):
             self.redraw()
-        elif isinstance(ev, event.AppStartEvent):
+        elif isinstance(ev, event.AppStart):
             self.app_start()
-        elif isinstance(ev, event.ResetEvent):
+        elif isinstance(ev, event.Reset):
             self.reset_world(ev)
-        elif isinstance(ev, event.WorldBuiltEvent):
+        elif isinstance(ev, event.WorldBuilt):
             self.world_built(ev)
-        elif isinstance(ev, event.PlayerForwardEvent):
+        elif isinstance(ev, event.PlayerForward):
             self.player_forward(ev)
-        elif isinstance(ev, event.PlayerTurnEvent):
+        elif isinstance(ev, event.PlayerTurn):
             self.player_turn(ev)
 
-        elif isinstance(ev, event.ToggleViewEvent):
+        elif isinstance(ev, event.View):
             self.toggle_view(ev)
-        elif isinstance(ev, event.HelpEvent):
+        elif isinstance(ev, event.Help):
             self.help(ev)
-        elif isinstance(ev, event.FoundDangerEvent):
+        elif isinstance(ev, event.FoundDanger):
             self.found_danger(ev)
 
 
@@ -199,21 +195,18 @@ class HelpDisplay(pg.sprite.Sprite):
         pg.sprite.Sprite.__init__(self)
         self.image = pg.Surface((500, 580))
         self.image.set_alpha(255 * 0.6)
-        self.image.fill(color['gray'])
+        self.image.fill(color['white'])
         self.rect = self.image.get_rect()
         self.text = help
 
         self.draw_text()
 
     def draw_text(self):
-        try:
-            fo = pg.font.Font(*status_font)
-        except IOError:
-            fo = pg.font.Font(None, status_font[1])
+        fo = pg.font.Font(*status_font)
 
         prevpos = None
         for line in self.text.split('\n'):
-            textr = fo.render(line, 1, color['light_green'])
+            textr = fo.render(line, 1, color['danger'])
             textrpos = textr.get_rect()
             textrpos.left = self.image.get_rect().left
             if prevpos:

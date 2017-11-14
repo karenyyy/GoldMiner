@@ -1,116 +1,108 @@
-
 class Event:
-
     def __init__(self):
         self.name = "Generic event"
 
 
-class TickEvent(Event):
+class Tick(Event):
     def __init__(self):
         self.name = "CPU tick"
 
 
-class QuitEvent(Event):
+class Quit(Event):
     def __init__(self):
         self.name = "Program quits"
 
 
-class AppStartEvent(Event):
+class AppStart(Event):
     def __init__(self, app):
         self.name = "Program starts"
         self.app = app
 
-class GenerateRequestEvent(Event):
+
+class GenerateRequest(Event):
     def __init__(self):
         self.name = "Generate a new world"
 
 
-class ResetEvent(Event):
+class Reset(Event):
     def __init__(self):
         self.name = "Reset the world"
 
 
-class WorldBuiltEvent(Event):
+class WorldBuilt(Event):
     def __init__(self, world):
         self.name = "a new world built, let's go ~~"
         self.world = world
 
 
-class FoundDangerEvent(Event):
+class FoundDanger(Event):
     def __init__(self, pos):
         self.name = "found new danger"
         self.pos = pos
 
 
-class StepEvent(Event):
+class NextStep(Event):
     def __init__(self):
         self.name = "Next step"
 
 
-class ToggleAutoEvent(Event):
+class AutoMode(Event):
     def __init__(self):
         self.name = "Auto/manual step mode"
 
 
-class ToggleViewEvent(Event):
+class View(Event):
     def __init__(self):
         self.name = "View mode"
 
 
-class HelpEvent(Event):
+class Help(Event):
     def __init__(self):
         self.name = "Display help info"
 
 
-class WumpusDieEvent(Event):
+class MonsterDie(Event):
     def __init__(self, pos):
         self.name = "Monster dies"
         self.pos = pos
 
 
-class PlayerForwardEvent(Event):
+class PlayerForward(Event):
     def __init__(self, pos):
         self.name = "Player moves forward"
         self.pos = pos
 
 
-
-class PlayerTurnEvent(Event):
+class PlayerTurn(Event):
     direction_list = {'left': 0, 'right': 1}
+
     def __init__(self, direction, facing):
-        if direction is PlayerTurnEvent.direction_list['left']:
+        if direction is PlayerTurn.direction_list['left']:
             direc = "left"
-        elif direction is PlayerTurnEvent.direction_list['right']:
+        elif direction is PlayerTurn.direction_list['right']:
             direc = "right"
         self.name = "Player turns %s" % direc
         self.direction = direction
         self.facing = facing
 
 
-class PlayerPickEvent(Event):
+class PlayerGrabGold(Event):
     def __init__(self, pos):
-        self.name = "Player picks the GOLD !! :P"
+        self.name = "Player grabs the GOLD !! :P"
         self.pos = pos
 
 
-class PlayerShootEvent(Event):
+class PlayerShoot(Event):
     def __init__(self):
         self.name = "Player shoots !!!!"
 
 
-class PlayerPerceiveEvent(Event):
-    def __init__(self, percept):
-        self.name = "Player perceives %s" % percept
-        self.percept = percept
-
-
-class PlayerDieEvent(Event):
+class PlayerDie(Event):
     def __init__(self):
         self.name = "Player dies @T_T@"
 
 
-class EventManager:
-
+class EventController:
     def __init__(self):
         self.listeners = {}
 
@@ -122,15 +114,10 @@ class EventManager:
             del self.listeners[listener]
 
     def post(self, ev):
-        if not (isinstance(ev, TickEvent) or \
-                isinstance(ev, StepEvent) or \
-                isinstance(ev, HelpEvent) or \
-                isinstance(ev, ToggleViewEvent) or \
-                isinstance(ev, ToggleAutoEvent)):
-            print (" >>> " + ev.name)
+        if not (isinstance(ev, Tick) or isinstance(ev, NextStep) or isinstance(ev, Help) or isinstance(ev, View) or isinstance(ev, AutoMode)):
+            print " >>>>>> ", ev.name
 
         for listener in self.listeners.keys():
-            # self.listeners is empty dict
             if listener is None:
                 del self.listeners[listener]
                 continue

@@ -102,7 +102,9 @@ class WumpusKnowledgeBase():
         self.k = self.k & s
 
     def ask(self, s):
-        print "===================="
+        print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+        print "           waiting for result...             "
+        print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
         print "checking ", s
         start = time.time()
 

@@ -1,6 +1,6 @@
 
 
-from event import TickEvent, AppStartEvent
+from event import Tick, AppStart
 
 
 class App:
@@ -11,19 +11,19 @@ class App:
     STATE_RUNNING = 1
     STATE_PAUSED = 2
 
-    def __init__(self, ev_manager):
-        self.ev_manager = ev_manager
-        self.ev_manager.register_listener(self)
+    def __init__(self, event_controller):
+        self.event_controller = event_controller
+        self.event_controller.register_listener(self)
 
         self.state = App.STATE_PREPARING  # self.state=0
 
     def start(self):
         self.state = App.STATE_RUNNING  # self.state=1
-        ev = AppStartEvent(self)
-        self.ev_manager.post(ev)
+        ev = AppStart(self)
+        self.event_controller.post(ev)
 
     def notify(self, event):
-        if isinstance(event, TickEvent):
+        if isinstance(event, Tick):
             if self.state == App.STATE_PREPARING:
                 self.start()
 

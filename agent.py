@@ -1,10 +1,9 @@
-
 import random
 
 import numpy
 
 import event
-from kb import WumpusKnowledgeBase
+from knowledgeBase import WumpusKnowledgeBase
 from logicalExpr import expr
 
 action_list = {
@@ -39,12 +38,13 @@ def neighbors(i, j):
 
 
 class Agent:
-
-    def __init__(self, ev_manager):
-        self.ev_manager = ev_manager
-        self.ev_manager.register_listener(self)
+    def __init__(self, event_controller):
+        self.event_controller = event_controller
+        self.event_controller.register_listener(self)
         self.gameOver = True
         self.gold_grabbed = False
+
+    def _init_shooting_range(self):
         self.shooting_range = set()
         for i in range(4):
             for j in range(4):
@@ -55,11 +55,12 @@ class Agent:
         self.gold_grabbed = False
         self.pos = (-1, 0)
         self.facing = facing_list['right']
+        self.move = [action_list['forward']]
+
         self.visited = set()
         self.danger = set()
         self.safe = set()
-        self.fringe = set()
-        self.move = [action_list['forward']]
+        self.possible_danger = set()
 
         self.world = numpy.zeros((4, 4, 5))
         self.kb = WumpusKnowledgeBase()
@@ -69,7 +70,8 @@ class Agent:
         while not done:
             i = random.choice(range(4))
             j = random.choice(range(4))
-            if self.world[i][j][1] != 1 and self.world[i][j][4] != 1 and self.world[i][j][2] != 1 and (i != 0 and j != 0):
+            if self.world[i][j][1] != 1 and self.world[i][j][4] != 1 and self.world[i][j][2] != 1 and (
+                    i != 0 and j != 0):
                 self.world[i][j][1] = 1
                 done = True
 
@@ -78,7 +80,8 @@ class Agent:
         while not done:
             i = random.choice(range(4))
             j = random.choice(range(4))
-            if self.world[i][j][1] != 1 and self.world[i][j][4] != 1 and self.world[i][j][2] != 1 and (i != 0 and j != 0):
+            if self.world[i][j][1] != 1 and self.world[i][j][4] != 1 and self.world[i][j][2] != 1 and (
+                    i != 0 and j != 0):
                 self.world[i][j][4] = 1
                 # generating Strench
                 for pos in neighbors(i, j):
@@ -91,119 +94,95 @@ class Agent:
             while not done:
                 i = random.choice(range(4))
                 j = random.choice(range(4))
-                if self.world[i][j][1] != 1 and self.world[i][j][4] != 1 and self.world[i][j][2] != 1 and (i != 0 and j != 0):
+                if self.world[i][j][1] != 1 and self.world[i][j][4] != 1 and self.world[i][j][2] != 1 and (
+                        i != 0 and j != 0):
                     self.world[i][j][2] = 1
                     done = True
                     # generating Breeze
                     for pos in neighbors(i, j):
                         self.world[pos[0]][pos[1]][0] = 1
 
-        ev = event.WorldBuiltEvent(self.world)
-        self.ev_manager.post(ev)
+        ev = event.WorldBuilt(self.world)
+        self.event_controller.post(ev)
 
-    def next(self):
-
-        if not self.gameOver and (not self.gold_grabbed):
-            if len(self.move) > 0:
-                action = self.move.pop()
-            else:
-                action = self.nextAction()
-
-            self.doAction(action)
-        else:
-            ev = event.ResetEvent()
-            self.ev_manager.post(ev)
-
-
-    def nextAction(self):
-        if len(self.safe) > 0:
-            source = self.safe
-        elif len(self.fringe) > 0:
-            source = self.fringe
-        else:
-            source = self.danger
-        goal = source.pop()
-        self.move = self.convert2Move(self.shortest_path(goal))
-        action = self.move.pop()
-        return action
 
     def findSafe(self, i, j):
-        new = neighbors(i, j) - self.visited
-        new -= self.safe
-        new -= self.danger
+        possible_next = neighbors(i, j) - self.visited
+        possible_next -= self.safe
+        possible_next -= self.danger
 
-        new_safe = set()
-        new_danger = set()
+        update_safe = set()
+        update_danger = set()
 
         if (self.world[i][j][0] == 0) and (self.world[i][j][3] == 0):
-            self.fringe -= set((i, j))
-            new_safe |= new
+            self.possible_danger -= set((i, j))
+            update_safe |= possible_next
         else:
-            self.fringe |= new
+            self.possible_danger |= possible_next
 
-        print "fringe list: ", self.fringe, "visited list:", self.visited
+        print "possible_danger list: ", self.possible_danger, "visited list:", self.visited
 
-        fringe = self.fringe.copy()
+        possible_danger = self.possible_danger.copy()
         if len(self.visited) > 1:
-            for x in fringe:
+            for x in possible_danger:
                 if self.kb.ask(expr('(P%s%s | W%s%s)' % (x * 2))):
                     # dpll not satisfied
                     print '(P%s%s | W%s%s)' % (x * 2), "is dangerous"
-                    new_danger.add(x)
-                    self.fringe.remove(x)
-                    ev = event.FoundDangerEvent(x)
-                    self.ev_manager.post(ev)
+                    update_danger.add(x)
+                    self.possible_danger.remove(x)
+                    ev = event.FoundDanger(x)
+                    self.event_controller.post(ev)
                 elif self.kb.ask(expr('(~P%s%s & ~W%s%s)' % (x * 2))):
                     # dpll satisfied
                     print '(~P%s%s & ~W%s%s)' % (x * 2), "is safe"
-                    new_safe.add(x)
-                    self.fringe.remove(x)
-        if len(new_safe) > 0:
-            self.safe |= new_safe
-        if len(new_danger) > 0:
-            self.danger |= new_danger
+                    update_safe.add(x)
+                    self.possible_danger.remove(x)
+        if len(update_safe) > 0:
+            self.safe |= update_safe
+        if len(update_danger) > 0:
+            self.danger |= update_danger
 
         print "safe list: ", self.safe
 
-    def shortest_path(self, goal):
-        g = self.visited
-        print g, "visited"
-        v = {}
-        for x in g:
-            v[x] = float("inf")
-        v[goal] = 0
+    def shortestPath(self, goal):
+        visited = self.visited
+        print visited, "visited"
+        cost = {}
+        for i in visited:
+            cost[i] = float("inf")
+        cost[goal] = 0
 
-        def v_neighbors(i, j, s):
-            li = []
-            for t in neighbors(i, j):
-                if (t in self.visited) and (t not in s):
-                    li.append(t)
-            return li
+        def visitedNeighbors(i, j, path_tracing_lst):
+            lst = []
+            for (x, y) in neighbors(i, j):
+                if ((x, y) in self.visited) and ((x, y) not in path_tracing_lst):
+                    lst.append((x, y))
+            return lst
 
-        def get_path(v):
-            path = []
-            a = self.pos
-            t = v[a]
-            while t > 1:
-                for x in v_neighbors(a[0], a[1], s):
-                    if v[x] < t:
-                        t = t - 1
-                        path.append(x)
-                        a = x
+        def getPath(cost):
+            path_covered = []
+            curr_pos = self.pos
+            c = cost[curr_pos]
+            while c > 1:
+                for i in visitedNeighbors(curr_pos[0], curr_pos[1], path_tracing_lst):
+                    if cost[i] < c:
+                        c = c - 1
+                        path_covered.append(i)
+                        curr_pos = i
                         break
-            return path
+            return path_covered
 
-        s = [goal]
-        while (len(s) > 0):
-            u = s.pop()
-            for x in v_neighbors(u[0], u[1], s):
-                if v[x] > v[u] + 1:
-                    v[x] = v[u] + 1
-                    s.append(x)
+        path_tracing_lst = [goal]
+        while (len(path_tracing_lst) > 0):
+            u = path_tracing_lst.pop()
+            for p in visitedNeighbors(u[0], u[1], path_tracing_lst):
+                if cost[p] > cost[u] + 1:
+                    cost[p] = cost[u] + 1
+                    path_tracing_lst.append(p)
 
-        pa = get_path(v)
-        pa.append(goal)
-        return pa
+        path = getPath(cost)
+        path.append(goal)
+        return path
 
     def convert2Move(self, path):
         move = []
@@ -253,30 +232,28 @@ class Agent:
             dx, dy = move_coordinate[self.facing]
             new_pos = (self.pos[0] + dx, self.pos[1] + dy)
             if new_pos in neighbors(*self.pos):
-                ev = event.PlayerForwardEvent(new_pos)
-                self.ev_manager.post(ev)
+                ev = event.PlayerForward(new_pos)
+                self.event_controller.post(ev)
 
                 if new_pos not in self.visited:
                     i, j = new_pos
-                    percept = self.world[i][j]
-                    ev = event.PlayerPerceiveEvent(percept)
-                    self.ev_manager.post(ev)
+                    curr_state = self.world[i][j]
 
                     self.visited.add((i, j))
                     if (i, j) in self.safe:
                         self.safe.remove((i, j))
 
-                    if percept[1] == 1:
+                    if curr_state[1] == 1:
                         self.gold_grabbed = True
                         self.doAction(action_list['grab'])
-                    elif (percept[2] == 1) or (percept[4] == 1):
+                    elif (curr_state[2] == 1) or (curr_state[4] == 1):
                         self.gameOver = True
-                        ev = event.PlayerDieEvent()
-                        self.ev_manager.post(ev)
+                        ev = event.PlayerDie()
+                        self.event_controller.post(ev)
                     else:
                         c = 0
                         know = []
-                        for x in percept:
+                        for x in curr_state:
                             # if B, G, S
                             if x == 1:
                                 know.append("%s%s%s" % (map_list[c], i, j))
@@ -296,16 +273,16 @@ class Agent:
         elif action is action_list['left']:
             self.facing = (self.facing - 1) % 4
 
-            ev = event.PlayerTurnEvent(
-                event.PlayerTurnEvent.direction_list['left'], self.facing)
-            self.ev_manager.post(ev)
+            ev = event.PlayerTurn(
+                event.PlayerTurn.direction_list['left'], self.facing)
+            self.event_controller.post(ev)
 
         elif action is action_list['right']:
             self.facing = (self.facing + 1) % 4
 
-            ev = event.PlayerTurnEvent(
-                event.PlayerTurnEvent.direction_list['right'], self.facing)
-            self.ev_manager.post(ev)
+            ev = event.PlayerTurn(
+                event.PlayerTurn.direction_list['right'], self.facing)
+            self.event_controller.post(ev)
 
         elif action is action_list['shoot']:
             def shootingRange(facing):
@@ -321,29 +298,55 @@ class Agent:
                 if self.world[i][j][4] == 1:
                     self.wumpus_die(i, j)
 
-                    ev = event.PlayerShootEvent()
-                    self.ev_manager.post(ev)
+                    ev = event.PlayerShoot()
+                    self.event_controller.post(ev)
 
         elif action is action_list['grab']:
             i, j = (self.pos[0], self.pos[1])
             self.world[i][j][1] = 0
             self.gold_grabbed = True
 
-            ev = event.PlayerPickEvent(self.pos)
-            self.ev_manager.post(ev)
+            ev = event.PlayerGrabGold(self.pos)
+            self.event_controller.post(ev)
 
-    def wumpus_die(self, i, j):
+    def monster_die(self, i, j):
 
         self.world[i][j][4] = 0
         for pos in neighbors(i, j):
             self.world[pos[0]][pos[1]][3] = 0  # eliminate stench
 
-        ev = event.WumpusDieEvent((i, j))
-        self.ev_manager.post(ev)
+        ev = event.MonsterDie((i, j))
+        self.event_controller.post(ev)
+
+    def next(self):
+        if not self.gameOver and (not self.gold_grabbed):
+            try:
+                action = self.move.pop()
+            except IndexError:
+                action = self.nextAction()
+
+            self.doAction(action)
+        else:
+            ev = event.Reset()
+            self.event_controller.post(ev)
+
+    def nextAction(self):
+        # always prefer the safer strategy each move
+        if len(self.safe) > 0:
+            next_move_list = self.safe
+        elif len(self.possible_danger) > 0:
+            next_move_list = self.possible_danger
+        else:
+            next_move_list = self.danger
+        goal = next_move_list.pop()
+        optimal_path = self.shortestPath(goal)
+        self.move = self.convert2Move(optimal_path)
+        action = self.move.pop()
+        return action
 
     def notify(self, e):
-        if isinstance(e, event.GenerateRequestEvent):
+        if isinstance(e, event.GenerateRequest):
 
             self._generate_world()
-        elif isinstance(e, event.StepEvent):
+        elif isinstance(e, event.NextStep):
             self.next()
