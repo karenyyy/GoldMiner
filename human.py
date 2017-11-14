@@ -51,7 +51,7 @@ class Human:
 
         self.curr_pos = (-1, 0)
         self.facing = facing_list['right']
-        self.maze = numpy.zeros((4, 4, 5))  # [B, G, P, S, W]
+        self.maze = numpy.zeros((4, 4, 5))  # [B, G, P, S, M]
         # Place gold randomly
         done = False
         while not done:
