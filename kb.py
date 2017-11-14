@@ -28,20 +28,6 @@ class WumpusKnowledgeBase():
             for j in range(4):
                 for fringe, death in (('B', 'P'), ('S', 'W')):
                     left = "%s%s%s" % (fringe, i, j)
-
-                    '''
-                    left_list:
-                    B00
-                    S00
-                    B01
-                    S01
-                    B10
-                    S10
-                    B11
-                    S11
-                    ......
-
-                    '''
                     right_list = []
                     for s, t in neighbors(i, j):
                         right_list.append("%s%s%s" % (death, s, t))
