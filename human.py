@@ -61,7 +61,7 @@ class Human:
                 self.maze[i][j][1] = 1
                 done = True
 
-        # Place the wumpus randomly
+        # Place the monster randomly
         done = False
         while not done:
             i = random.choice(range(4))
