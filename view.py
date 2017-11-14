@@ -5,7 +5,7 @@ import os
 import pygame as pg
 from pygame.locals import *
 
-import ai, event
+import agent, event
 
 color = {
     'gray': (100, 100, 100),
@@ -112,7 +112,7 @@ class MainFrame:
     def player_forward(self, ev):
         if not self.front_sprites.has(self.player):
             self.player.add(self.front_sprites)
-            self.player.update_facing(ai.facing_list['right'])
+            self.player.update_facing(agent.facing_list['right'])
         self.player_moveto(ev.pos)
         self.sectors[ev.pos].visit()
         self.front_sprites.update()
@@ -142,7 +142,7 @@ class MainFrame:
             item = ev.world[key]
             for x in range(5):
                 if item[x] == 1:
-                    thing = ai.map_list[x].lower()
+                    thing = agent.map_list[x].lower()
                     sector.things.append(thing)
 
     def reset_world(self, ev):
