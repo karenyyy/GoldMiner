@@ -2,11 +2,11 @@
 B: Breeze
 G: Gold
 P: Pit
-S: Stench
-W: Wumpus
+S: Strench
+M: Monster
 
-Every sector in the world contains an indicator list [B, G, P, S, W]
-2 indicates presence, 0 indicates absence
+Every sector in the world contains an indicator list [B, G, P, S, M]
+1 indicates presence, 0 indicates absence
 """
 
 import random
@@ -49,7 +49,6 @@ def neighbors(i, j):
 
 
 class Agent:
-    """AI agent"""
 
     def __init__(self, ev_manager):
         self.ev_manager = ev_manager
@@ -91,7 +90,7 @@ class Agent:
             j = random.choice(range(4))
             if self.world[i][j][1] != 1 and self.world[i][j][4] != 1 and self.world[i][j][2] != 1 and (i != 0 and j != 0):
                 self.world[i][j][4] = 1
-                # generating Stench
+                # generating Strench
                 for pos in neighbors(i, j):
                     self.world[pos[0]][pos[1]][3] = 1
                 done = True
