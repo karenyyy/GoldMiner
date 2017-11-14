@@ -54,7 +54,6 @@ class Human:
         self.maze = numpy.zeros((4, 4, 5))
         # Place gold randomly
         done = False
-
         while not done:
             i = random.choice(range(4))
             j = random.choice(range(4))
