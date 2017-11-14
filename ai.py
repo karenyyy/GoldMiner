@@ -1,13 +1,3 @@
-"""
-B: Breeze
-G: Gold
-P: Pit
-S: Strench
-M: Monster
-
-Every sector in the world contains an indicator list [B, G, P, S, M]
-1 indicates presence, 0 indicates absence
-"""
 
 import random
 
