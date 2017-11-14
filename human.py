@@ -83,6 +83,7 @@ class Human:
                 if self.maze[i][j][1] != 1 and self.maze[i][j][4] != 1 and self.maze[i][j][2] != 1 and (
                         i != 0 and j != 0):
                     self.maze[i][j][2] = 1
+                    # the place breeze
                     for pos in neighbors(i, j):
                         self.maze[pos[0]][pos[1]][0] = 1
                     done = True
