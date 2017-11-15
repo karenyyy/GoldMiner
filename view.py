@@ -37,6 +37,7 @@ def load_image(name):
     fullname = os.path.join('images', name)
     image = pg.image.load(fullname)
     image = image.convert()
+    image.set_colorkey(image.get_at((0, 0)), RLEACCEL)
     return image, image.get_rect()
 
 
@@ -251,7 +252,7 @@ class Sector(pg.sprite.Sprite):
                 self.draw_things()
 
     def draw_img(self, s):
-        image, rect = load_image('%s.png' % s, -1)
+        image, rect = load_image('%s.png' % s)
         rect.center = self.image.get_rect().center
 
         self.image.blit(image, rect)
@@ -298,8 +299,7 @@ class Player(pg.sprite.Sprite):
             rect = image.get_rect()
             draw_facing(image, rect)
         self.facing = facing
-        image, rect = load_image('facing_%s.png' % \
-                                 self.facing, -1)
+        image, rect = load_image('facing_%s.png' % self.facing)
         draw_facing(image, rect)
 
     def update(self):
