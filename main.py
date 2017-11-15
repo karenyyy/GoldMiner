@@ -1,4 +1,3 @@
-
 from agent import Agent
 from app import App
 from controller import *
@@ -15,7 +14,6 @@ def main():
     mode = raw_input("Human mode (H/h) / AI mode (A/a) : ")
     keyboard = KeyboardController(event_controller)
 
-
     if mode == "H" or mode == "h":
         human = Human(event_controller)
     elif mode == "A" or mode == "a":
@@ -31,4 +29,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

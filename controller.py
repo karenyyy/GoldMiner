@@ -25,10 +25,12 @@ class CPUSpinnerController:
             self.clock.tick(fps)
             ev = event.Tick()
             self.event_controller.post(ev)
+            '''
             if i==1:
                 ev = event.Help()
                 self.event_controller.post(ev)
                 i-=1
+            '''
             if count == 0:
                 if self.auto_mode:
                     ev = event.NextStep()

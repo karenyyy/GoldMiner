@@ -17,8 +17,7 @@ def neighbors(i, j):
     return li
 
 
-class WumpusKnowledgeBase():
-    """KnowledgeBase for wumpus world"""
+class KnowledgeBase():
 
     def __init__(self):
         self.k = expr('~P00 & ~W00')
@@ -103,7 +102,7 @@ class WumpusKnowledgeBase():
 
     def ask(self, s):
         print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-        print "           waiting for result...             "
+        print "  waiting for result from knowledge base...  "
         print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
         print "checking ", s
         start = time.time()
@@ -118,7 +117,7 @@ class WumpusKnowledgeBase():
 
 # test code
 '''
-w=WumpusKnowledgeBase()
+w=KnowledgeBase()
 w.ask(expr("(P12 | W12)"))
 w.ask(expr("(~P12 | ~W22)"))
 '''

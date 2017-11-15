@@ -25,24 +25,18 @@ help = """
     *** ->: turn left
     *** <-: turn right
    Press H to hide the help information 
-        (might need to try a few more times, sorry..)
    
    Have fun \(^o^)/\(^o^)/\(^o^)/
 """
 
-light_flick_ticks = 5
 
 status_font = (os.path.join('helpInfoFont', 'Pacifico.ttf'), 22)
 
 
-def load_image(name, colorkey=None):
+def load_image(name):
     fullname = os.path.join('images', name)
     image = pg.image.load(fullname)
     image = image.convert()
-    if colorkey is not None:
-        if colorkey == -1:
-            colorkey = image.get_at((0, 0))
-        image.set_colorkey(colorkey, RLEACCEL)
     return image, image.get_rect()
 
 
@@ -99,7 +93,7 @@ class MainFrame:
         self.player_sector = self.sectors[pos]
         self.player.moveto = self.player_sector.rect.center
 
-    def help(self, pos):
+    def help(self):
         if not self.front_sprites.has(self.help_display):
             self.help_display.add(self.front_sprites)
         else:
@@ -123,7 +117,7 @@ class MainFrame:
     def found_danger(self, ev):
         self.sectors[ev.pos].set_danger()
 
-    def toggle_view(self, ev):
+    def view(self, ev):
         if self.view_all:
             self.view_all = False
         else:
@@ -131,7 +125,7 @@ class MainFrame:
 
         for s in self.sectors.values():
             if not s.visited:
-                s.toggle_view(self.view_all)
+                s.view(self.view_all)
 
     def world_built(self, ev):
         for key, sector in self.sectors.items():
@@ -181,7 +175,7 @@ class MainFrame:
             self.player_turn(ev)
 
         elif isinstance(ev, event.View):
-            self.toggle_view(ev)
+            self.view(ev)
         elif isinstance(ev, event.Help):
             self.help(ev)
         elif isinstance(ev, event.FoundDanger):
@@ -243,7 +237,7 @@ class Sector(pg.sprite.Sprite):
         else:
             self.image.fill(color['gray'])
 
-    def toggle_view(self, view_flag):
+    def view(self, view_flag):
         self.view = view_flag
         if view_flag:
             self.draw_things()
@@ -275,14 +269,12 @@ class Sector(pg.sprite.Sprite):
 
 
 class Player(pg.sprite.Sprite):
-    """Player in the cave"""
 
     def __init__(self):
         pg.sprite.Sprite.__init__(self)
         self.image = pg.Surface((30, 30))
         self.image.fill((180, 180, 180))
         self.rect = self.image.get_rect()
-        #self.image, self.rect = load_image('green_light.png', -1)
 
         self.moveto = None
         self.facing = None
