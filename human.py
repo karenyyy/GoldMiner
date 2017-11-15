@@ -119,6 +119,8 @@ class Human:
                             self.event_controller.post(ev)
                         if (self.maze[self.curr_pos[0]][self.curr_pos[1]][2] == 1) or (
                             self.maze[self.curr_pos[0]][self.curr_pos[1]][4] == 1):
+                            ev = event.PlayerForward(self.curr_pos)
+                            self.event_controller.post(ev)
                             ev = event.PlayerDie()
                             self.event_controller.post(ev)
 
