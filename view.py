@@ -212,7 +212,6 @@ class HelpDisplay(pg.sprite.Sprite):
 
 
 class Sector(pg.sprite.Sprite):
-    """Sector of the map"""
 
     def __init__(self, group=None):
         pg.sprite.Sprite.__init__(self, group)
