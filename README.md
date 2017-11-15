@@ -6,6 +6,8 @@ CMPSC360 Project GoldMiner Demo
     
     *** R: Reset the board
     
+    *** H: Display help information
+    
     *** Q: Quit the game
     
     *** Enter: Next step
